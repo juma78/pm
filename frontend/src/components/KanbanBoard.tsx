@@ -13,11 +13,16 @@ import {
 } from "@dnd-kit/core";
 import { KanbanColumn } from "@/components/KanbanColumn";
 import { KanbanCardPreview } from "@/components/KanbanCardPreview";
+import { ChatPanel } from "@/components/ChatPanel";
 import { createId, initialData, moveCard, type BoardData } from "@/lib/kanban";
 
 export const KanbanBoard = () => {
   const [board, setBoard] = useState<BoardData>(() => initialData);
   const [activeCardId, setActiveCardId] = useState<string | null>(null);
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const [isSignedIn, setIsSignedIn] = useState(false);
+  const [loginError, setLoginError] = useState("");
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -91,6 +96,74 @@ export const KanbanBoard = () => {
 
   const activeCard = activeCardId ? cardsById[activeCardId] : null;
 
+  const handleSignIn = (event: React.FormEvent) => {
+    event.preventDefault();
+    if (username === "user" && password === "password") {
+      setIsSignedIn(true);
+      setLoginError("");
+      return;
+    }
+    setLoginError("Use user / password to continue.");
+  };
+
+  const handleSignOut = () => {
+    setIsSignedIn(false);
+    setUsername("");
+    setPassword("");
+    setLoginError("");
+  };
+
+  if (!isSignedIn) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-[var(--surface)] px-6 py-12">
+        <form
+          onSubmit={handleSignIn}
+          className="w-full max-w-md rounded-[32px] border border-[var(--stroke)] bg-white p-8 shadow-[var(--shadow)]"
+        >
+          <p className="text-xs font-semibold uppercase tracking-[0.35em] text-[var(--gray-text)]">
+            Sign in
+          </p>
+          <h1 className="mt-3 text-3xl font-semibold text-[var(--navy-dark)]">
+            Welcome back
+          </h1>
+          <p className="mt-3 text-sm leading-6 text-[var(--gray-text)]">
+            Use the demo credentials to view the board.
+          </p>
+          <div className="mt-6 space-y-4">
+            <label className="block text-sm font-medium text-[var(--navy-dark)]">
+              Username
+              <input
+                aria-label="Username"
+                value={username}
+                onChange={(event) => setUsername(event.target.value)}
+                className="mt-2 w-full rounded-2xl border border-[var(--stroke)] px-4 py-3 text-sm outline-none"
+              />
+            </label>
+            <label className="block text-sm font-medium text-[var(--navy-dark)]">
+              Password
+              <input
+                aria-label="Password"
+                type="password"
+                value={password}
+                onChange={(event) => setPassword(event.target.value)}
+                className="mt-2 w-full rounded-2xl border border-[var(--stroke)] px-4 py-3 text-sm outline-none"
+              />
+            </label>
+          </div>
+          {loginError ? (
+            <p className="mt-4 text-sm text-red-600">{loginError}</p>
+          ) : null}
+          <button
+            type="submit"
+            className="mt-6 w-full rounded-full bg-[var(--secondary-purple)] px-4 py-3 text-sm font-semibold text-white"
+          >
+            Sign in
+          </button>
+        </form>
+      </div>
+    );
+  }
+
   return (
     <div className="relative overflow-hidden">
       <div className="pointer-events-none absolute left-0 top-0 h-[420px] w-[420px] -translate-x-1/3 -translate-y-1/3 rounded-full bg-[radial-gradient(circle,_rgba(32,157,215,0.25)_0%,_rgba(32,157,215,0.05)_55%,_transparent_70%)]" />
@@ -111,13 +184,22 @@ export const KanbanBoard = () => {
                 and capture quick notes without getting buried in settings.
               </p>
             </div>
-            <div className="rounded-2xl border border-[var(--stroke)] bg-[var(--surface)] px-5 py-4">
-              <p className="text-xs font-semibold uppercase tracking-[0.25em] text-[var(--gray-text)]">
-                Focus
-              </p>
-              <p className="mt-2 text-lg font-semibold text-[var(--primary-blue)]">
-                One board. Five columns. Zero clutter.
-              </p>
+            <div className="flex flex-wrap items-center gap-3">
+              <div className="rounded-2xl border border-[var(--stroke)] bg-[var(--surface)] px-5 py-4">
+                <p className="text-xs font-semibold uppercase tracking-[0.25em] text-[var(--gray-text)]">
+                  Focus
+                </p>
+                <p className="mt-2 text-lg font-semibold text-[var(--primary-blue)]">
+                  One board. Five columns. Zero clutter.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={handleSignOut}
+                className="rounded-full border border-[var(--stroke)] px-4 py-2 text-sm font-semibold text-[var(--navy-dark)]"
+              >
+                Log out
+              </button>
             </div>
           </div>
           <div className="flex flex-wrap items-center gap-4">
@@ -133,32 +215,35 @@ export const KanbanBoard = () => {
           </div>
         </header>
 
-        <DndContext
-          sensors={sensors}
-          collisionDetection={closestCorners}
-          onDragStart={handleDragStart}
-          onDragEnd={handleDragEnd}
-        >
-          <section className="grid gap-6 lg:grid-cols-5">
-            {board.columns.map((column) => (
-              <KanbanColumn
-                key={column.id}
-                column={column}
-                cards={column.cardIds.map((cardId) => board.cards[cardId])}
-                onRename={handleRenameColumn}
-                onAddCard={handleAddCard}
-                onDeleteCard={handleDeleteCard}
-              />
-            ))}
-          </section>
-          <DragOverlay>
-            {activeCard ? (
-              <div className="w-[260px]">
-                <KanbanCardPreview card={activeCard} />
-              </div>
-            ) : null}
-          </DragOverlay>
-        </DndContext>
+        <div className="grid gap-6 xl:grid-cols-[1.7fr_0.8fr]">
+          <DndContext
+            sensors={sensors}
+            collisionDetection={closestCorners}
+            onDragStart={handleDragStart}
+            onDragEnd={handleDragEnd}
+          >
+            <section className="grid gap-6 lg:grid-cols-5">
+              {board.columns.map((column) => (
+                <KanbanColumn
+                  key={column.id}
+                  column={column}
+                  cards={column.cardIds.map((cardId) => board.cards[cardId])}
+                  onRename={handleRenameColumn}
+                  onAddCard={handleAddCard}
+                  onDeleteCard={handleDeleteCard}
+                />
+              ))}
+            </section>
+            <DragOverlay>
+              {activeCard ? (
+                <div className="w-[260px]">
+                  <KanbanCardPreview card={activeCard} />
+                </div>
+              ) : null}
+            </DragOverlay>
+          </DndContext>
+          <ChatPanel board={board} onBoardUpdate={setBoard} />
+        </div>
       </main>
     </div>
   );

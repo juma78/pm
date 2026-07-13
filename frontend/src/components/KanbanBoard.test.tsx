@@ -5,13 +5,38 @@ import { KanbanBoard } from "@/components/KanbanBoard";
 const getFirstColumn = () => screen.getAllByTestId(/column-/i)[0];
 
 describe("KanbanBoard", () => {
-  it("renders five columns", () => {
+  it("shows a login form before the board is available", () => {
     render(<KanbanBoard />);
+    expect(screen.getByLabelText(/username/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/password/i)).toBeInTheDocument();
+    expect(screen.queryAllByTestId(/column-/i)).toHaveLength(0);
+  });
+
+  it("allows a user to sign in and out", async () => {
+    render(<KanbanBoard />);
+    await userEvent.type(screen.getByLabelText(/username/i), "user");
+    await userEvent.type(screen.getByLabelText(/password/i), "password");
+    await userEvent.click(screen.getByRole("button", { name: /sign in/i }));
+
+    expect(screen.getAllByTestId(/column-/i)).toHaveLength(5);
+
+    await userEvent.click(screen.getByRole("button", { name: /log out/i }));
+    expect(screen.getByLabelText(/username/i)).toBeInTheDocument();
+  });
+
+  it("renders five columns", async () => {
+    render(<KanbanBoard />);
+    await userEvent.type(screen.getByLabelText(/username/i), "user");
+    await userEvent.type(screen.getByLabelText(/password/i), "password");
+    await userEvent.click(screen.getByRole("button", { name: /sign in/i }));
     expect(screen.getAllByTestId(/column-/i)).toHaveLength(5);
   });
 
   it("renames a column", async () => {
     render(<KanbanBoard />);
+    await userEvent.type(screen.getByLabelText(/username/i), "user");
+    await userEvent.type(screen.getByLabelText(/password/i), "password");
+    await userEvent.click(screen.getByRole("button", { name: /sign in/i }));
     const column = getFirstColumn();
     const input = within(column).getByLabelText("Column title");
     await userEvent.clear(input);
@@ -21,6 +46,9 @@ describe("KanbanBoard", () => {
 
   it("adds and removes a card", async () => {
     render(<KanbanBoard />);
+    await userEvent.type(screen.getByLabelText(/username/i), "user");
+    await userEvent.type(screen.getByLabelText(/password/i), "password");
+    await userEvent.click(screen.getByRole("button", { name: /sign in/i }));
     const column = getFirstColumn();
     const addButton = within(column).getByRole("button", {
       name: /add a card/i,
