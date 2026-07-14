@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { SendIcon, SparkleIcon } from "@/components/icons";
 
 type ChatPanelProps = {
   board: {
@@ -44,8 +45,11 @@ export const ChatPanel = ({ board, onBoardUpdate }: ChatPanelProps) => {
   };
 
   return (
-    <aside className="rounded-[24px] border border-[var(--stroke)] bg-white/80 p-6 shadow-[var(--shadow)] backdrop-blur">
-      <h2 className="text-lg font-semibold text-[var(--navy-dark)]">Simple AI chat</h2>
+    <aside className="flex h-full flex-col rounded-[24px] border border-[var(--stroke)] bg-white/80 p-6 shadow-[var(--shadow)] backdrop-blur">
+      <div className="flex items-center gap-2">
+        <SparkleIcon className="h-5 w-5 text-[var(--secondary-purple)]" />
+        <h2 className="text-lg font-semibold text-[var(--navy-dark)]">Simple AI chat</h2>
+      </div>
       <p className="mt-2 text-sm text-[var(--gray-text)]">
         Send a short request and the backend will respond with a simple reply.
       </p>
@@ -59,12 +63,13 @@ export const ChatPanel = ({ board, onBoardUpdate }: ChatPanelProps) => {
         <button
           type="submit"
           disabled={loading}
-          className="rounded-full bg-[var(--secondary-purple)] px-4 py-2 text-sm font-semibold text-white disabled:opacity-60"
+          className="inline-flex items-center gap-2 rounded-full bg-[var(--secondary-purple)] px-4 py-2 text-sm font-semibold text-white disabled:opacity-60"
         >
+          <SendIcon className="h-4 w-4" />
           {loading ? "Sending..." : "Send"}
         </button>
       </form>
-      <div className="mt-4 rounded-2xl border border-[var(--stroke)] bg-[var(--surface)] p-4 text-sm text-[var(--navy-dark)]">
+      <div className="mt-4 flex-1 overflow-y-auto rounded-2xl border border-[var(--stroke)] bg-[var(--surface)] p-4 text-sm text-[var(--navy-dark)]">
         {reply}
       </div>
     </aside>
