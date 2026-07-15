@@ -2,13 +2,11 @@
 
 import { useState } from "react";
 import { SendIcon, SparkleIcon } from "@/components/icons";
+import type { BoardData } from "@/lib/kanban";
 
 type ChatPanelProps = {
-  board: {
-    columns: Array<{ id: string; title: string; cardIds: string[] }>;
-    cards: Record<string, { id: string; title: string; details: string }>;
-  };
-  onBoardUpdate?: (updatedBoard: ChatPanelProps["board"]) => void;
+  board: BoardData;
+  onBoardUpdate?: (updatedBoard: BoardData) => void;
 };
 
 export const ChatPanel = ({ board, onBoardUpdate }: ChatPanelProps) => {
